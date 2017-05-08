@@ -1,0 +1,11 @@
+Main "table/Table.lua"
+Main "table/RadialTable.lua"
+Main "table/GridTable.lua"
+Main "table/TableTypes.lua"
+
+Main "Board.lua"
+Main "Element.lua"
+Main "Widget.lua"
+
+Option "minify" "full"
+Output "dist/moonmod-board-ui.lua"

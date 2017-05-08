@@ -1,0 +1,3 @@
+[submodule "libraries/moonmod-core"]
+	path = libraries/moonmod-core
+	url = https://github.com/smhxx/moonmod-core.git
