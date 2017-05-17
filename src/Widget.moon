@@ -3,7 +3,7 @@ export class Widget extends CallbackHandler
     super!
     if (type options) == "table"
       if options.callback != nil
-        @addcallback options.callback, options.callbackOwner
+        @addCallback options.callback, options.callbackOwner
       @elements = options.elements or { }
       @board = options.board
     else

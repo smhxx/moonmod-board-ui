@@ -40,6 +40,13 @@ describe "Widget", ->
       assert.are.same { }, widget.callbacks
       assert.is.not.inherited widget, "callbacks"
 
+    it "adds an initial callback if one is passed as an option", ->
+      callbackOwner = {
+        fn: ->
+      }
+      widget = Widget { callback: callbackOwner.fn, :callbackOwner }
+      assert.are.same { { fn: callbackOwner.fn, owner: callbackOwner } }, widget.callbacks
+
   describe ":draw()", ->
 
     it "draws all of its elements to the specified board", ->
