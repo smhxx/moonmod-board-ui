@@ -1,19 +1,31 @@
 export doNothing = ->
 
+getHorizontalSizeScale = =>
+  @tileMode and (1000 * @widthRatio) or 8000
+
+getVerticalSizeScale = =>
+  @tileMode and 1000 or 8000
+
+getHorizontalPosScale = =>
+  @tileMode and @widthRatio or 8.3
+
+getVerticalPosScale = =>
+  @tileMode and 1 or 8.3
+
 convertElementPosition = (x, y) =>
-  halfWidthResolution = @widthResolution / 2
-  halfHeightResolution = halfWidthResolution / @widthRatio
-  x = @@boardDrawBounds * (x - halfWidthResolution) / halfWidthResolution
-  y = @@boardDrawBounds * (y - halfHeightResolution) / halfHeightResolution
-  { x, @@elementDrawDepth, y }
+  halfHeightResolution = @heightResolution / 2
+  halfWidthResolution = halfHeightResolution * @widthRatio
+  x = (getHorizontalPosScale @) * (x - halfWidthResolution) / halfWidthResolution
+  y = (getVerticalPosScale @) * (y - halfHeightResolution) / halfHeightResolution
+  { x, @drawDepth, y }
 
 createElementProps = (element, overrides) =>
   overrides = overrides or { }
-  heightResolution = @widthResolution / @widthRatio
+  widthResolution = @heightResolution * @widthRatio
   rawPosition = overrides.position or { overrides.x or element.x, overrides.y or element.y }
   {
-    width: 8000 * (overrides.width or element.width) / @widthResolution
-    height: 8000 * (overrides.height or element.height) / heightResolution
+    width: (getHorizontalSizeScale @) * (overrides.width or element.width) / widthResolution
+    height: (getVerticalSizeScale @) * (overrides.height or element.height) / @heightResolution
     position: convertElementPosition @, rawPosition[1], rawPosition[2]
     label: overrides.text or element.text
     font_size: (overrides.fontSize or element.fontSize) * 100
@@ -28,24 +40,26 @@ getElementIndex = (element) =>
 stripVectorXYZ = (vector) ->
   (vector.__class == Vector) and (vector\strip { "x", "y", "z" }) or vector
 
-export class Board
-  @boardDrawBounds = 8.29
-  @elementDrawDepth = 59/100
-  @standardBoardHeight = 9.125
+standardBoardHeight = 9.125
 
+export class Board
+  drawDepth: 59/100
+  heightResolution: 4000
   offset: Transform { zPos: 2.5 }
   tableType: TableTypes.CUSTOM_RECTANGLE
+  tileMode: false
   widthRatio: 1
-  widthResolution: 8000
 
   new: (options) =>
     @elements = { }
     if (type options) == "table"
       @context = options.context
+      @drawDepth = options.drawDepth
+      @heightResolution = options.heightResolution
       @offset = options.offset
       @tableType = options.tableType
+      @tileMode = options.tileMode
       @widthRatio = options.widthRatio
-      @widthResolution = options.widthResolution
 
   clear: =>
     for i = #@elements, 1, -1
@@ -89,7 +103,7 @@ export class Board
     assert seatTransform != nil,
       "tts-board-ui: Attempted to send board to player #{playerId} but this table does not include that player."
     offsetTransform = Transform @offset
-    offsetTransform.position.data.z += @@standardBoardHeight / @widthRatio
+    offsetTransform.position.data.z += standardBoardHeight / @widthRatio
     offsetTransform\rotateAboutYAxis seatTransform.rotation.data.y
     offsetTransform\translate seatTransform.position
     @setPosition offsetTransform.position

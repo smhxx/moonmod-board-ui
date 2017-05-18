@@ -18,8 +18,8 @@ describe "Board", ->
     export api = ApiContext!
     export board = Board { context: api }
     export element = Element {
-      x: 1500
-      y: 2000
+      x: 2250
+      y: 500
       width: 3000
       height: 2000
       text: "foo"
@@ -29,17 +29,21 @@ describe "Board", ->
   describe ":new()", ->
 
     it "assumes the correct defaults if no options are provided", ->
-      assert.equals 1, board.widthRatio
-      assert.equals 8000, board.widthResolution
-      assert.equals TableTypes.CUSTOM_RECTANGLE, board.tableType
+      assert.equals 0.59, board.drawDepth
+      assert.equals 4000, board.heightResolution
       assert.are.same board.offset, Transform { zPos: 2.5 }
+      assert.equals TableTypes.CUSTOM_RECTANGLE, board.tableType
+      assert.equals false, board.tileMode
+      assert.equals 1, board.widthRatio
 
     it "takes on any values provided in the options argument", ->
       options = {
         context: "blah"
-        widthRatio: 2.5
-        widthResolution: 6000
+        heightResolution: 6000
+        offset: Transform { zPos: 6.0 }
         tableType: TableTypes.OCTAGON
+        tileMode: true
+        widthRatio: 2.5
       }
       board = Board options
       for k, v in pairs options
@@ -70,7 +74,7 @@ describe "Board", ->
   describe ":addElement()", ->
 
     before_each ->
-      export board = Board { context: api, widthResolution: 6000, widthRatio: 1.5 }
+      export board = Board { context: api, heightResolution: 2000, widthRatio: 1.5 }
 
     it "throws an error if the API context has not been defined", ->
       board = Board!
@@ -90,43 +94,64 @@ describe "Board", ->
 
     it "calculates the correct final width of the Element", ->
       board\addElement element
-      assert.equals 4000, api.buttons[1].width
+      assert.equals 8000, api.buttons[1].width
 
     it "accepts the width of the Element as an override", ->
       board\addElement element, { width: 1500 }
-      assert.equals 2000, api.buttons[1].width
+      assert.equals 4000, api.buttons[1].width
 
     it "calculates the correct final height of the Element", ->
       board\addElement element
-      assert.equals 4000, api.buttons[1].height
+      assert.equals 8000, api.buttons[1].height
 
     it "accepts the height of the Element as an override", ->
       board\addElement element, { height: 1000 }
-      assert.equals 2000, api.buttons[1].height
+      assert.equals 4000, api.buttons[1].height
 
     it "calculates the correct final position of the element", ->
       board\addElement element
-      assert.equals -4.145, api.buttons[1].position[1]
-      assert.equals 0.59, api.buttons[1].position[2]
-      assert.equals 0, api.buttons[1].position[3]
+      assert.equals 4.15, api.buttons[1].position[1]
+      assert.equals -4.15, api.buttons[1].position[3]
 
     it "uses the overridden position if one is provided as an argument", ->
-      board\addElement element, { position: { 3000, 4000 } }
+      board\addElement element, { position: { 1500, 1000 } }
       assert.equals 0, api.buttons[1].position[1]
-      assert.equals 0.59, api.buttons[1].position[2]
-      assert.equals 8.29, api.buttons[1].position[3]
-
-    it "uses the overridden x property if provided as an argument", ->
-      board\addElement element, { x: 4500 }
-      assert.equals 4.145, api.buttons[1].position[1]
-      assert.equals 0.59, api.buttons[1].position[2]
       assert.equals 0, api.buttons[1].position[3]
 
+    it "uses the overridden x property if provided as an argument", ->
+      board\addElement element, { x: 1500 }
+      assert.equals 0, api.buttons[1].position[1]
+      assert.equals -4.15, api.buttons[1].position[3]
+
     it "uses the overridden y property if provided as an argument", ->
-      board\addElement element, { y: 3000 }
-      assert.equals -4.145, api.buttons[1].position[1]
-      assert.equals 0.59, api.buttons[1].position[2]
-      assert.equals 4.145, api.buttons[1].position[3]
+      board\addElement element, { y: 1000 }
+      assert.equals 4.15, api.buttons[1].position[1]
+      assert.equals 0, api.buttons[1].position[3]
+
+    it "determines the button's global y position based on drawDepth", ->
+      board.drawDepth = 4
+      board\addElement element
+      assert.equals 4, api.buttons[1].position[2]
+
+    it "calculates the Element's width correctly in tile mode", ->
+      board.tileMode = true
+      board\addElement element
+      assert.equals 1500, api.buttons[1].width
+
+    it "calculates the Element's height correctly in tile mode", ->
+      board.tileMode = true
+      board\addElement element
+      assert.equals 1000, api.buttons[1].height
+
+    it "calculates the Element's x position correctly in tile mode", ->
+      board.tileMode = true
+      board\addElement element
+      assert.equals 0.75, api.buttons[1].position[1]
+
+    it "calculates the Element's y position correctly in tile mode", ->
+      board.tileMode = true
+      board\addElement element
+      assert.equals -0.5, api.buttons[1].position[3]
 
     it "includes the Element's text/label property", ->
       board\addElement element
