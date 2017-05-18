@@ -1,5 +1,7 @@
 export doNothing = ->
 
+scriptContext = @
+
 getHorizontalSizeScale = =>
   @tileMode and (1000 * @widthRatio) or 8000
 
@@ -30,7 +32,7 @@ createElementProps = (element, overrides) =>
     label: overrides.text or element.text
     font_size: (overrides.fontSize or element.fontSize) * 100
     click_function: overrides.callback or "doNothing"
-    function_owner: not Element.isOnGlobalScript and @context or nil
+    function_owner: scriptContext
   }
 
 getElementIndex = (element) =>

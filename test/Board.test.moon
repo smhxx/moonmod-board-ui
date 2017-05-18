@@ -173,14 +173,22 @@ describe "Board", ->
       board\addElement element, { callback: "wingdings" }
       assert.equals "wingdings", api.buttons[1].click_function
 
-    it "passes its own context as the callback's owner if loaded on an object script", ->
+    it "passes the object context as the callback's owner if loaded on an object script", ->
+      if useDistMode!
+        use "./dist/moonmod-board-ui.lua", api
+      else
+        use "./src/Board.moon", api
+      board = Board { context: api }
       board\addElement element
       assert.equals api, api.buttons[1].function_owner
 
     it "passes nil as the callback's owner if loaded on the global script", ->
-      Element.isOnGlobalScript = true
+      if useDistMode!
+        use "./dist/moonmod-board-ui.lua"
+      else
+        use "./src/Board.moon"
+      board = Board { context: api }
       board\addElement element
-      Element.isOnGlobalScript = false
       assert.is.Nil api.buttons[1].function_owner
 
   describe ":removeElement()", ->
